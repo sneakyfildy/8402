@@ -1,0 +1,20 @@
+{
+  "name": "8402",
+  "version": "1.0.0",
+  "devDependencies": {
+    "grunt": "latest",
+    "grunt-contrib-less": "latest",
+    "grunt-contrib-uglify": "latest",
+    "grunt-contrib-watch": "latest",
+    "grunt-karma": "^0.8.3",
+    "karma": "^0.12.16",
+	"karma-qunit": ">=0.1.1",
+	"karma-coverage": ">=0.1.1",
+	"karma-chrome-launcher": "latest",
+	"grunt-contrib-jshint": "latest",
+	"grunt-jsduck": "latest",
+    "grunt-contrib-requirejs": "latest"
+  },
+  "description": "ERROR: No README data found!",
+  "author": "sneakyfildy"
+}
