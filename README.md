@@ -1,0 +1,1 @@
+Try Game.field.setSize(n, m) + Game.field.addGameNumber() and Game.field.addSize(n)
