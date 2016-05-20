@@ -139,7 +139,7 @@ module.exports = function(grunt) {
                     end: ""
                 }
             },
-            slicer_release:{
+            app_release:{
                 options:{
                     baseUrl: 'js/src',
                     optimize: 'uglify2',
@@ -150,7 +150,7 @@ module.exports = function(grunt) {
                     name: 'o'
                 }
             },
-            slicer_dev:{
+            app_dev:{
                 options:{
                     baseUrl: 'js/src',
                     optimize: 'none',

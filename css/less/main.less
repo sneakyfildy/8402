@@ -20,20 +20,23 @@ table{
 td{
     border: 1px solid gray;
     word-break: break-all;
-    position: relative;
+/*    position: relative;*/
 
     .outer-content{
         overflow: hidden;
         text-overflow: clip;
         text-align: center;
-        position: absolute;
-        top: 0px;
-        left: 0px;
+        display: block;
+        position: relative;
         width: 100%;
         height: 100%;
 
-        .outer {overflow: hidden; position: relative; height: 100%;  width: 100%;}
-        .outer {display: table; position: static;}
+        .outer {
+            overflow: hidden; height: 100%;  width: 100%;
+        }
+        .outer {
+            display: table; position: absolute;
+        }
 
         .middle {position: absolute; top: 50%;} /* for quirk explorer only*/
         .middle {display: table-cell; vertical-align: middle; width: 100%; position: static;}
