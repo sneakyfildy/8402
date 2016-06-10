@@ -26,16 +26,15 @@ define(['field/face/face.control.main', 'abstract/AbstractAngularComponent'], fu
         getTpl: function(){
             return '<table><tbody>'+
             '<tr ng-repeat="row in rows">'+
-              '<td ng-repeat="cell in row.cells" class="c{{cell.index}} r{{row.index}} [% cellNgCls %] [% cellCls %]">'+
-            '<span class="outer-content">'+
-                '<div class="outer">'+
-                    '<div class="middle">'+
-                        '<div class="inner {{cell.valueCls}}">'+
-                            '{{cell.displayValue}}'+
-                        '</div>'+
+              '<td ng-repeat="cell in row.cells" class="c{{cell.index}} r{{row.index}} [% cellNgCls %] [% cellCls %] value{{cell.displayValue}}">'+
+                '<div class="outer-content-simple">'+
+                    '<div class="coords">'+
+                        '{{cell.cell}}:{{cell.row}}'+
+                    '</div>'+
+                    '<div class="inner {{cell.valueCls}}">'+
+                        '{{cell.displayValue || "&nbsp;"}}'+
                     '</div>'+
                 '</div>'+
-            '</span>'+
               '</td>'+
             '</tr>'+
          '</tbody></table>';
@@ -44,7 +43,6 @@ define(['field/face/face.control.main', 'abstract/AbstractAngularComponent'], fu
             $super.call(this, config);
             this.module = angular.module(this.moduleName, []);
             this.module.controller(this.controllerName, ['$scope', mainFaceControllerFn]);
-            console.log('controller init');
         },
         update: function(rows, cells){
             var scope = this.getScope();
@@ -100,7 +98,12 @@ define(['field/face/face.control.main', 'abstract/AbstractAngularComponent'], fu
 			clearTimeout( this.__fieldResizeTimeout );
 			w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 			h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-			used = parseInt( Math.min(w, h) * 0.7, 10 );
+            if (h >= w){
+                used = parseInt( w * 1, 10 );
+            }else{
+                used = parseInt( h * 0.7, 10 );
+            }
+
             this.$gf.width(used);
             this.$gf.height(used);
             this.updateFontSize();

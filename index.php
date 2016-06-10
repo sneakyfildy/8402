@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<?php
+$path = '/var/www/vhosts/feeldeeng.v.shared.ru/httpdocs/include';
+set_include_path(get_include_path() . PATH_SEPARATOR . $path);
+require 'htmlInserts.inc';
+?>
 <html>
     <head>
         <title>8402</title>
@@ -16,5 +21,8 @@
             window.Config.debug = <?php if (ISSET($_GET['prod'])){ echo '0';}else{echo '1';}?>;
         </script>
         <script data-main="js/loader" src="js/vendor/require/require.js"></script>
+    <?php
+    echo insertBloknotusGA();
+    ?>
     </body>
 </html>

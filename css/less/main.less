@@ -2,6 +2,7 @@ body, html{
     width: 90%;
     height: 90%;
     overflow: hidden;
+    background: #ddd;
 }
 #gamefield{
     position: absolute;
@@ -10,6 +11,8 @@ body, html{
     height: 70%;
     min-height: 250px;
     min-width: 250px;
+    background: #FFFFED;
+    box-shadow: 0 0 14px -4px #999, 0 0 2px 0px #999;
 }
 table{
     border-collapse: collapse;
@@ -18,19 +21,22 @@ table{
     table-layout: fixed;
 }
 td{
-    border: 1px solid gray;
+/*    border: 1px solid gray;*/
     word-break: break-all;
-/*    position: relative;*/
+    
+    &.animating{
+        transition: transform .05s ease-in-out;
+    }
 
     .outer-content{
-        overflow: hidden;
+/*        overflow: hidden;*/
         text-overflow: clip;
         text-align: center;
         display: block;
         position: relative;
         width: 100%;
         height: 100%;
-
+        
         .outer {
             overflow: hidden; height: 100%;  width: 100%;
         }
@@ -43,6 +49,54 @@ td{
 
         .inner {position: relative; top: -50%} /* for quirk explorer only */
     }
+    
+    .coords{
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        font-size: 0.6em;
+        color: #aaa;
+        display: none;
+    }
+    
+    .outer-content-simple{
+        text-align: center;
+        white-space: nowrap;
+        overflow: hidden;
+        position: relative;
+        width: 100%;
+        height: 100%;
+        border: 1px solid transparent;
+        display: table;
+        
+/*        box-shadow: 0px 0px 1px 0px #666;*/
+        border-radius: 4px;
+        
+        .inner{
+            display: table-cell;
+            vertical-align: middle;
+/*            background-color: spin( darken(#ff0000, 10%), 0);*/
+        } 
+    }
 
 
+}
+
+@base-color: #FFD5AA;
+
+.cell-color(@color, @amount, @steps){
+    background-color: tint(spin( darken(@color, @amount), (@steps*15)), 50%);
+}
+
+.generate-columns(20, 5%, 5);
+
+.generate-columns(@n, @initialColorPct, @colorStep, @i: 2, @steps: 0) when (@steps =< @n) {
+    
+    .cell.value@{i}>.outer-content-simple {
+        @nextPct: (@initialColorPct + @colorStep * @steps);
+        .cell-color(@base-color, @nextPct, @steps);
+         
+    }
+    
+    .generate-columns(@n, @initialColorPct, @colorStep, (@i * 2), (@steps + 1));
 }

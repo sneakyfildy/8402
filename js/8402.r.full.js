@@ -1,5 +1,5 @@
 /*! DO NOT MODIFY THIS FILE, IT IS COMPILED! */
-define("field/Brains", [], function() {
+define("field/Gamefield.Brains", [], function() {
     var className = "Gamefield.Brains";
     U.define({
         className: className,
@@ -250,7 +250,7 @@ define("abstract/AbstractAngularComponent", [], function() {
     });
 });
 
-define("field/Face", [ "field/face/face.control.main", "abstract/AbstractAngularComponent" ], function(mainFaceControllerFn) {
+define("field/Gamefield.Face", [ "field/face/face.control.main", "abstract/AbstractAngularComponent" ], function(mainFaceControllerFn) {
     var className = "Gamefield.Face";
     U.define({
         className: className,
@@ -261,13 +261,12 @@ define("field/Face", [ "field/face/face.control.main", "abstract/AbstractAngular
         cellNgCls: "ng-binding ng-scope",
         __fieldResizeTimeout: "",
         getTpl: function() {
-            return "<table><tbody>" + '<tr ng-repeat="row in rows">' + '<td ng-repeat="cell in row.cells" class="c{{cell.index}} r{{row.index}} [% cellNgCls %] [% cellCls %]">' + '<span class="outer-content">' + '<div class="outer">' + '<div class="middle">' + '<div class="inner {{cell.valueCls}}">' + "{{cell.displayValue}}" + "</div>" + "</div>" + "</div>" + "</span>" + "</td>" + "</tr>" + "</tbody></table>";
+            return "<table><tbody>" + '<tr ng-repeat="row in rows">' + '<td ng-repeat="cell in row.cells" class="c{{cell.index}} r{{row.index}} [% cellNgCls %] [% cellCls %] value{{cell.displayValue}}">' + '<div class="outer-content-simple">' + '<div class="coords">' + "{{cell.cell}}:{{cell.row}}" + "</div>" + '<div class="inner {{cell.valueCls}}">' + '{{cell.displayValue || "&nbsp;"}}' + "</div>" + "</div>" + "</td>" + "</tr>" + "</tbody></table>";
         },
         initComponent: function($super, config) {
             $super.call(this, config);
             this.module = angular.module(this.moduleName, []);
             this.module.controller(this.controllerName, [ "$scope", mainFaceControllerFn ]);
-            console.log("controller init");
         },
         update: function(rows, cells) {
             var scope = this.getScope();
@@ -313,7 +312,11 @@ define("field/Face", [ "field/face/face.control.main", "abstract/AbstractAngular
             clearTimeout(this.__fieldResizeTimeout);
             w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
             h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
-            used = parseInt(Math.min(w, h) * .7, 10);
+            if (h >= w) {
+                used = parseInt(w * 1, 10);
+            } else {
+                used = parseInt(h * .7, 10);
+            }
             this.$gf.width(used);
             this.$gf.height(used);
             this.updateFontSize();
@@ -328,11 +331,12 @@ define("field/Face", [ "field/face/face.control.main", "abstract/AbstractAngular
     return U.ClassManager.get(className).prototype;
 });
 
-define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Face) {
+define("field/Gamefield", [ "field/Gamefield.Brains", "field/Gamefield.Face" ], function(Brains, Face) {
     var className = "Gamefield";
     U.define({
         className: className,
         gfSelector: "#gamefield",
+        defaultSize: 4,
         initComponent: function(config) {
             this.linkElements();
             this.$gf.hide();
@@ -352,90 +356,26 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
             });
         },
         setListeners: function() {
-            $(document).on("keydown", this.onKeyDown.bind(this));
             var body = $("body").get(0);
-            var mc = new Hammer(body);
-            mc.get("swipe").set({
+            var motionControl = new Hammer(body);
+            motionControl.get("swipe").set({
                 direction: Hammer.DIRECTION_ALL,
                 treshold: 25,
                 velocity: .1
             });
-            mc.get("pan").set({
+            motionControl.get("pan").set({
                 direction: Hammer.DIRECTION_VERTICAL,
                 treshold: 150
             });
-            var me = this;
-            mc.on("swipeleft swiperight swipeup swipedown ", function(ev) {
-                ev.preventDefault();
-                switch (ev.type) {
-                  case "swipeleft":
-                    me.moveX(-1);
-                    return false;
-
-                  case "swiperight":
-                    me.moveX(1);
-                    return false;
-
-                  case "swipeup":
-                    me.moveY(-1);
-                    return false;
-
-                  case "swipedown":
-                    me.moveY(1);
-                    return false;
-
-                  case "panleft":
-                    me.moveX(-1);
-                    return false;
-
-                  case "panright":
-                    me.moveX(1);
-                    return false;
-
-                  case "panup":
-                    me.moveY(-1);
-                    return false;
-
-                  case "pandown":
-                    me.moveY(1);
-                    return false;
-                }
-                return false;
-            });
-        },
-        onKeyDown: function(e) {
-            switch (e.which) {
-              case 37:
-                this.moveX(-1);
-                e.stopPropagation();
-                e.preventDefault();
-                return false;
-
-              case 39:
-                this.moveX(1);
-                e.stopPropagation();
-                e.preventDefault();
-                return false;
-
-              case 38:
-                this.moveY(-1);
-                e.stopPropagation();
-                e.preventDefault();
-                return false;
-
-              case 40:
-                this.moveY(1);
-                e.stopPropagation();
-                e.preventDefault();
-                return false;
-            }
+            $(document).on("keydown", this.onKeyDown.bind(this));
+            motionControl.on("swipeleft swiperight swipeup swipedown", this.onSwipe.bind(this));
         },
         linkElements: function() {
             this.$eventEl = $("<div>");
             this.$gf = this.$gamefield = $(this.gfSelector);
         },
         init: function() {
-            this.setSize(3);
+            this.setSize(this.defaultSize);
         },
         updateFace: function() {
             this.face.update(this.rows, this.cells);
@@ -516,11 +456,12 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
             return this;
         },
         moveX: function(dir) {
-            var cell, x, y, height, cellsLen, condition, borderLimit, nextCondition;
+            var cell, x, y, height, width, cellsLen, condition, borderLimit, nextCondition, initialCell;
             height = this.gameHeight;
+            width = this.gameWidth;
             cellsLen = this.gameWidth;
-            var k, nextCell, lastAvailableIndex, isNextFree, isCellMoved;
-            var anims;
+            var anims, k, nextCell, lastAvailableIndex, isNextFree, isCellMoved, movesCount, lastMovedCell;
+            anims = [];
             isCellMoved = false;
             y = 0;
             borderLimit = dir === -1 ? 0 : cellsLen - 1;
@@ -530,6 +471,7 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
             nextCondition = function(kIterator) {
                 return dir === -1 ? kIterator >= 0 : kIterator < cellsLen;
             };
+            console.clear();
             for (;y < height; y++) {
                 x = dir === -1 ? 0 : cellsLen - 1;
                 inner1: for (;condition(x); x += -1 * dir) {
@@ -537,10 +479,23 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
                     if (!cell.value || x === borderLimit) {
                         continue;
                     }
+                    initialCell = {
+                        x: cell.cell,
+                        y: cell.row
+                    };
+                    lastMovedCell = null;
+                    movesCount = 0;
                     for (k = x; nextCondition(k); k += dir) {
                         cell = this.rows[y].cells[k];
                         nextCell = this.rows[y].cells[k + dir];
                         if (!nextCell) {
+                            if (movesCount > 0) {
+                                console.log("move is over", initialCell, lastMovedCell || cell);
+                                anims.push({
+                                    from: initialCell,
+                                    to: lastMovedCell || cell
+                                });
+                            }
                             continue;
                         }
                         isNextFree = nextCell && !nextCell.value;
@@ -550,27 +505,45 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
                             } else {
                                 this.setCellAsValue(nextCell, nextCell.value + cell.value);
                                 this.setCellAsFree(cell);
+                                movesCount++;
                                 isCellMoved = true;
-                                console.log("move nf", cell.cell + ":" + cell.row, cell.value);
+                                console.log("move NOT FREE", nextCell.cell + ":" + nextCell.row, nextCell.value);
+                                lastMovedCell = {
+                                    x: nextCell.cell,
+                                    y: nextCell.row
+                                };
+                                if (movesCount > 0) {
+                                    console.log("move is over", initialCell, lastMovedCell);
+                                    anims.push({
+                                        from: initialCell,
+                                        to: lastMovedCell
+                                    });
+                                }
                                 continue inner1;
                             }
                         } else {
                             this.setCellAsValue(nextCell, nextCell.value + cell.value);
                             this.setCellAsFree(cell);
+                            movesCount++;
                             isCellMoved = true;
-                            console.log("move f", cell.cell + ":" + cell.row, cell.value);
+                            lastMovedCell = {
+                                x: nextCell.cell,
+                                y: nextCell.row
+                            };
+                            console.log("move FREE", nextCell.cell + ":" + nextCell.row, nextCell.value);
                         }
                     }
                 }
             }
-            this._afterMove(isCellMoved);
+            this.animateMoves(anims, "x", isCellMoved);
         },
         moveY: function(dir) {
-            var cell, x, y, height, cellsLen, condition, borderLimit, nextCondition, width, isCellMoved;
+            var cell, x, y, height, width, cellsLen, condition, borderLimit, nextCondition, initialCell;
             height = this.gameHeight;
             width = this.gameWidth;
             cellsLen = this.gameWidth;
-            var k, nextCell, lastAvailableIndex, isNextFree;
+            var anims, k, nextCell, lastAvailableIndex, isNextFree, isCellMoved, movesCount, lastMovedCell;
+            anims = [];
             isCellMoved = false;
             x = 0;
             borderLimit = dir === -1 ? 0 : height - 1;
@@ -580,6 +553,7 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
             nextCondition = function(kIterator) {
                 return dir === -1 ? kIterator >= 0 : kIterator < height;
             };
+            console.clear();
             for (;x < width; x++) {
                 y = dir === -1 ? 0 : height - 1;
                 inner1: for (;condition(y); y += -1 * dir) {
@@ -587,10 +561,23 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
                     if (!cell.value || y === borderLimit) {
                         continue;
                     }
+                    initialCell = {
+                        x: cell.cell,
+                        y: cell.row
+                    };
+                    lastMovedCell = null;
+                    movesCount = 0;
                     for (k = y; nextCondition(k); k += dir) {
                         cell = this.rows[k].cells[x];
                         nextCell = this.rows[k + dir] && this.rows[k + dir].cells[x];
                         if (!nextCell) {
+                            if (movesCount > 0) {
+                                console.log("move is over", initialCell, lastMovedCell || cell);
+                                anims.push({
+                                    from: initialCell,
+                                    to: lastMovedCell || cell
+                                });
+                            }
                             continue;
                         }
                         isNextFree = nextCell && !nextCell.value;
@@ -600,20 +587,57 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
                             } else {
                                 this.setCellAsValue(nextCell, nextCell.value + cell.value);
                                 this.setCellAsFree(cell);
+                                movesCount++;
                                 isCellMoved = true;
+                                console.log("move NOT FREE", nextCell.cell + ":" + nextCell.row, nextCell.value);
+                                lastMovedCell = {
+                                    x: nextCell.cell,
+                                    y: nextCell.row
+                                };
+                                if (movesCount > 0) {
+                                    console.log("move is over", initialCell, lastMovedCell);
+                                    anims.push({
+                                        from: initialCell,
+                                        to: lastMovedCell
+                                    });
+                                }
                                 continue inner1;
                             }
                         } else {
                             this.setCellAsValue(nextCell, nextCell.value + cell.value);
                             this.setCellAsFree(cell);
+                            movesCount++;
                             isCellMoved = true;
+                            lastMovedCell = {
+                                x: nextCell.cell,
+                                y: nextCell.row
+                            };
+                            console.log("move FREE", nextCell.cell + ":" + nextCell.row, nextCell.value);
                         }
                     }
                 }
             }
-            this._afterMove(isCellMoved);
+            this.animateMoves(anims, "y", isCellMoved);
+        },
+        animateMoves: function(anims, direction, isCellMoved) {
+            anims.forEach(function(anim) {
+                var $cellFrom, $cellTo, $original, $clone, fromPos, toPos, moveString, moveAmount;
+                $cellFrom = $(".c" + anim.from.x + ".r" + anim.from.y);
+                $cellTo = $(".c" + anim.to.x + ".r" + anim.to.y);
+                console.log($cellFrom, $cellTo);
+                fromPos = $cellFrom.position();
+                toPos = $cellTo.position();
+                $cellFrom.addClass("animating");
+                moveString = "translate" + direction.toUpperCase() + "(%amount%px)";
+                moveAmount = direction === "x" ? toPos.left - fromPos.left : toPos.top - fromPos.top;
+                $cellFrom.css({
+                    transform: moveString.replace("%amount%", moveAmount)
+                });
+            });
+            setTimeout(this._afterMove.bind(this, isCellMoved), 50);
         },
         _afterMove: function(moveDone) {
+            $("td").removeClass("animating").css("transform", "");
             if (moveDone) {
                 this.addGameNumber();
             }
@@ -664,6 +688,59 @@ define("field/Gamefield", [ "field/Brains", "field/Face" ], function(Brains, Fac
         },
         onFieldSizeChange: function() {
             this.fire("resize");
+        },
+        onKeyDown: function(e) {
+            var stopEvent = false;
+            switch (e.which) {
+              case 37:
+                this.moveX(-1);
+                stopEvent = true;
+                return false;
+
+              case 39:
+                this.moveX(1);
+                stopEvent = true;
+                return false;
+
+              case 38:
+                this.moveY(-1);
+                stopEvent = true;
+                return false;
+
+              case 40:
+                this.moveY(1);
+                stopEvent = true;
+                return false;
+            }
+            if (stopEvent) {
+                e.stopPropagation();
+                e.preventDefault();
+            }
+        },
+        onSwipe: function(ev) {
+            ev.preventDefault();
+            switch (ev.type) {
+              case "swipeleft":
+              case "panleft":
+                this.moveX(-1);
+                return false;
+
+              case "swiperight":
+              case "panright":
+                this.moveX(1);
+                return false;
+
+              case "swipeup":
+              case "panup":
+                this.moveY(-1);
+                return false;
+
+              case "swipedown":
+              case "pandown":
+                this.moveY(1);
+                return false;
+            }
+            return false;
         }
     });
     return U.ClassManager.get(className).prototype;
