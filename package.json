@@ -13,7 +13,10 @@
 	"karma-chrome-launcher": "latest",
 	"grunt-contrib-jshint": "latest",
 	"grunt-jsduck": "latest",
-    "grunt-contrib-requirejs": "latest"
+    "grunt-contrib-requirejs": "latest",
+    "grunt-babel": "latest",
+    "babel-preset-es2015": "latest",
+    "babel-preset-react": "latest"
   },
   "description": "ERROR: No README data found!",
   "author": "sneakyfildy"

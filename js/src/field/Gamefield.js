@@ -1,5 +1,4 @@
-/* global angular, Game, UNKNOWN, Hammer */
-
+/* global angular, Game, Hammer */
 define(['field/Gamefield.Brains', 'field/Gamefield.Face'], function(Brains, Face){
     var className = 'Gamefield';
     U.define({
@@ -353,11 +352,39 @@ define(['field/Gamefield.Brains', 'field/Gamefield.Face'], function(Brains, Face
             itemCell.value = value;
             itemCell.displayValue = value;
             itemCell.valueCls = 'game-number';
+            this.afterCellModification();
         },
         setCellAsFree: function(itemCell){
             itemCell.value = 0;
             itemCell.displayValue = null;
             itemCell.valueCls = 'free';
+            this.afterCellModification();
+        },
+        afterCellModification: function(){
+            this.saveState();
+        },
+        saveState: function(){
+            var ls;
+            ls = window.localStorage;
+            ls.setItem('gamefield', JSON.stringify(this.rows));
+        },
+        getState: function(){
+            var ls, state, parsedState;
+            ls = window.localStorage;
+            state = ls.getItem('gamefield');
+            parsedState = null;
+            if (!!state){
+                try{
+                    parsedState = JSON.parse(state);
+                }catch(err){
+                    // todo handle
+                }
+            }
+            return parsedState
+        },
+        applyState: function(state){
+            this.rows = state;
+            this.updateFace();
         },
         fire: function(eventName){
             this.$eventEl.trigger(eventName);

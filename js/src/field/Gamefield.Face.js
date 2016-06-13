@@ -1,6 +1,14 @@
 /* global angular */
 
-define(['field/face/face.control.main', 'abstract/AbstractAngularComponent'], function (mainFaceControllerFn) {
+define([
+    'field/face/face.control.main',
+    'abstract/AbstractAngularComponent',
+    'field/view/GamefieldView'
+], function (
+        mainFaceControllerFn,
+        AbstractAngularComponent,
+        GamefieldView
+    ) {
     var className = 'Gamefield.Face';
     U.define({
         className: className,

@@ -13,7 +13,7 @@ html {
   min-height: 250px;
   min-width: 250px;
   background: #FFFFED;
-  box-shadow: 0 0 14px -4px #999999, 0 0 2px 0px #999999;
+  box-shadow: 0 0 14px -4px #999, 0 0 2px 0px #999;
 }
 table {
   border-collapse: collapse;

@@ -9,12 +9,13 @@ require 'htmlInserts.inc';
         <title>8402</title>
         <meta charset="UTF-8">
         <link rel="stylesheet" type="text/css" href="css/project.compiled.css" />
-        <script src="https://hammerjs.github.io/dist/hammer.js"></script>
+        <script src="js/vendor/hammer.js"></script>
         <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport' />
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
         <div id="gamefield" ng-controller="GameFieldController" style="display:none;"></div>
+        <div id="content"></div>
         <!-- End of content -->
         <script>
             window.Config = window.Config || {};

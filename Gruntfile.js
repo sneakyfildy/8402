@@ -2,16 +2,14 @@ module.exports = function(grunt) {
 	var jsHintFiles, jshintGlobals, watchLessFiles, watchJsFiles,
 		jsHintOptions, watchKarmaFiles, warningSupress, projectGlobals;
 
-	watchLessFiles = ['less/**/*.less'];
-	watchJsFiles = ['src/**/*.js'];
+	watchLessFiles = ['js/less/**/*.less'];
+	watchJsFiles = ['js/src/**/*.js', 'js/src/**/*.jsx'];
 	watchKarmaFiles = [];
 	jsHintFiles = ['js/src/**/*.js'];
 
 	jsHintOptions = {
 		curly: true, // if (true) {return;}
 		eqeqeq: true, // ===
-		//immed: true,
-		//latedef: 'nofunc',
 		newcap: true,
 		noarg: true,
 		nonew: true,
@@ -31,9 +29,6 @@ module.exports = function(grunt) {
 		browser: true,
 		devel: true,
 		jquery: true,
-		//ignores: [
-			//'*jquery-2.0.3.min.js'
-		//]
 
 		// behavior
 		force: true
@@ -162,16 +157,28 @@ module.exports = function(grunt) {
                 }
             }
         },
+        babel: {
+//            options:{
+//                presets: ['react']
+//            },
+            dist: {
+                files: [{
+                    expand: true,
+                    src: ['js/src/field/view/*.jsx'],
+                    ext: '.js'
+                }]
+            }
+        },
 		watch: {
 			less: {
 				files: watchLessFiles,
 				tasks: ['less'],
-				options: { cwd: { files: 'css' }, spawn: false } // allow grunt to work from outer directory
+				//options: { cwd: { files: 'css' }, spawn: false } // allow grunt to work from outer directory
 			},
 			js:{
 				files: watchJsFiles,
-				tasks: ['requirejs', 'jshint', 'uglify:beautyful'],
-				options: { cwd: { files: 'js', spawn: 'grunt' }, spawn: true } // allow grunt to work from outer directory
+				tasks: ['babel', 'requirejs', 'jshint', 'uglify:beautyful'],
+				//options: { cwd: { files: 'js' }, spawn: false } // allow grunt to work from outer directory
 			}
 		}
 	});
@@ -184,9 +191,10 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-contrib-jshint');
 	grunt.loadNpmTasks('grunt-jsduck');
     grunt.loadNpmTasks('grunt-contrib-requirejs');
+    grunt.loadNpmTasks('grunt-babel');
 
 	// allow grunt to work from outer directory, additional tweak in watch task
-	grunt.file.setBase('../');
+	//grunt.file.setBase('../');
 
 	grunt.registerTask('watch-add-karma', 'Adding karma to watch task', function(){
 		grunt.config.merge({
@@ -213,7 +221,7 @@ module.exports = function(grunt) {
 	});
 
 	// default task: watches JS/LESS files and compiles them on change
-	grunt.registerTask('default', ['jshint', 'less', 'requirejs','uglify:beautyful', 'watch']);
+	grunt.registerTask('default', ['jshint', 'babel', 'less', 'requirejs','uglify:beautyful', 'watch']);
 	// task runs build process only once. "b" is for Build.
 	grunt.registerTask('b', ['uglify:beautyful', 'less:dev', 'usebanner:task']);
 
